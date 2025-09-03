@@ -1,14 +1,28 @@
-.PHONY: up down logs psql reset
+.PHONY: up down logs psql reset migrate-up migrate-down migrate-new
 include .env
+
+MIGRATE_DB_URL=postgres://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@localhost:$(POSTGRES_PORT)/$(POSTGRES_DB)?sslmode=disable
+MIGRATE_PATH=./migrations
+MIGRATE_BIN=./migrate.bin
+
+migrate-up:
+	$(MIGRATE_BIN) -path $(MIGRATE_PATH) -database $(MIGRATE_DB_URL) up
+
+migrate-down:
+	$(MIGRATE_BIN) -path $(MIGRATE_PATH) -database $(MIGRATE_DB_URL) down 1
+
+migrate-new:
+	@test -n "$(name)" || (echo ">> name= required"; exit 1)
+	$(MIGRATE_BIN) create -ext sql -dir $(MIGRATE_PATH) -seq $(name)
 
 build-dev:
 	go build -o server.out .
 
+run:
+	./server.out
+
 build-release:
 	@echo 'not implemented'
-
-new-migration:
-	./migrate.bin create -ext sql -dir migrations -seq $(name)
 
 up:
 	docker run -d \

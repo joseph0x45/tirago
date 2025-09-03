@@ -15,7 +15,7 @@ import (
 )
 
 func connectToDB() (*sqlx.DB, error) {
-	dbURL := os.Getenv("DB_URL")
+  dbURL := os.Getenv("DB_URL")
 	db, err := sqlx.Connect("postgres", dbURL)
 	if err != nil {
 		return nil, fmt.Errorf("[ERROR] Failed to connect to database: %w", err)
