@@ -32,9 +32,24 @@ func (s *AdminStore) InsertAdmin(admin *models.Admin) error {
   `
 	_, err := s.db.NamedExec(query, admin)
 	if err != nil {
-    return fmt.Errorf("[ERROR] Failed to insert new admin account: %w", err)
+		return fmt.Errorf("[ERROR] Failed to insert new admin account: %w", err)
 	}
 	return nil
+}
+
+func (s *AdminStore) GetAdminByID(id string) (*models.Admin, error) {
+	const query = `
+    select * from admins where id=$1
+  `
+	admin := &models.Admin{}
+	err := s.db.Get(admin, query, id)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("[ERROR] Failed to get admin by id: %w", err)
+	}
+	return admin, nil
 }
 
 func (s *AdminStore) GetAdminByUsername(username string) (*models.Admin, error) {
@@ -47,7 +62,7 @@ func (s *AdminStore) GetAdminByUsername(username string) (*models.Admin, error) 
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
-    return nil, fmt.Errorf("[ERROR] Failed to get admin by username: %w", err)
+		return nil, fmt.Errorf("[ERROR] Failed to get admin by username: %w", err)
 	}
 	return admin, nil
 }
@@ -78,6 +93,27 @@ func (s *AdminStore) EnsureAdminAccountExists() error {
 	err = s.InsertAdmin(newAdmin)
 	if err != nil {
 		return fmt.Errorf("[ERROR] Failed to insert new admin account: %w", err)
+	}
+	return nil
+}
+
+func (s *AdminStore) GetAllAdmins() ([]models.Admin, error) {
+	admins := make([]models.Admin, 0)
+	const query = "select * from admins"
+	err := s.db.Select(&admins, query)
+	if err != nil {
+		return nil, fmt.Errorf("[ERROR] Failed to get all admin accounts: %w", err)
+	}
+	return admins, nil
+}
+
+func (s *AdminStore) UpdateAdminPassword(password, id string) error {
+	const query = `
+    update admins set password=$1 where id=$2
+  `
+	_, err := s.db.Exec(query, password, id)
+	if err != nil {
+		return fmt.Errorf("[ERROR] Failed to change admin password: %w", err)
 	}
 	return nil
 }
