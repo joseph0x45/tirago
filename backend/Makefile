@@ -3,7 +3,7 @@ include .env
 
 MIGRATE_DB_URL=postgres://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@localhost:$(POSTGRES_PORT)/$(POSTGRES_DB)?sslmode=disable
 MIGRATE_PATH=./migrations
-MIGRATE_BIN=./migrate.bin
+MIGRATE_BIN=gomigrate
 
 migrate-up:
 	$(MIGRATE_BIN) -path $(MIGRATE_PATH) -database $(MIGRATE_DB_URL) up
